@@ -8,7 +8,6 @@
 
 using namespace std;
 
-enum Chance { Baixa, Media, Alta };
 //Coleta de dados com base nos ultimos 5 jogos:
 //1=vitoria 0.5=empate; 0=derrota
 double resultadoUltimoJogo = 0; 
@@ -19,11 +18,10 @@ double resultadoJogoMaisAntigo = 0.5;
 
 double mediaUltimosJogos = ((resultadoUltimoJogo*1.2) + (resultadoPenultimoJogo*1.1) + 
 resultadoAntepenultimoJogo + resultadoJogoAnterior + resultadoJogoMaisAntigo) / 5.0;
-// double valorAposta; //chance
 
 double resultadoFinal = mediaUltimosJogos;
 
-int main(int argc, char const *argv[])
+int main()
 {
   cout << "Media dos ultimos jogos: " << mediaUltimosJogos << endl;
 if (resultadoFinal >= 0.7) {
