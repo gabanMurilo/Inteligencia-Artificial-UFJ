@@ -1,4 +1,4 @@
-<html>
+
 <head>
   <title>Algoritmo de Apostas em Futebol</title>
 </head>
@@ -25,4 +25,3 @@ Chance de dar green: Baixa
   <h2>Disclaimer</h2>
   <p>Este algoritmo é apenas um modelo e não deve ser usado como uma garantia de ganhos. O apostador deve sempre fazer sua própria pesquisa antes de apostar em qualquer equipe.</p>
 </body>
-</html>
