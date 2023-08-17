@@ -3,3 +3,6 @@ mecanismo_apostas
 .vscode/launch.json
 .vscode/c_cpp_properties.json
 
+/cmake-build-release/
+/cmake-build-debug/
+

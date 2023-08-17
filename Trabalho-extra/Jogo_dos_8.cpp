@@ -3,7 +3,7 @@
 #include "queue"
 #include "unordered_set"
 #include "map"
-#include "locale.h"
+#include <clocale>
 
 using namespace std;
 
