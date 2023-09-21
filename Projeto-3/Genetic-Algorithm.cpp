@@ -1,66 +1,148 @@
 #include <iostream>
 #include <vector>
-#include <cstdlib>
-#include <ctime>
-#include <cmath>
+#include <climits>
 
 using namespace std;
 
-struct Chromosome {
-    double x;
-    double fitness;
-};
+const char EMPTY = ' ';
+const char PLAYER_X = 'X'; // Jogador
+const char PLAYER_O = 'O'; // Bot
 
-const int POPULATION_SIZE = 100;
-const double MUTATION_RATE = 0.01;
-const int MAX_GENERATIONS = 1000;
-const double MIN_X = -10.0;
-const double MAX_X = 10.0;
-
-double objectiveFunction(double x) {
-    return pow(x, 3);
-}
-
-// Initializar população com valores aleatórios
-vector<Chromosome> initializePopulation() {
-    vector<Chromosome> population(POPULATION_SIZE);
-    for (int i = 0; i < POPULATION_SIZE; ++i) {
-        Chromosome chromosome{};
-        chromosome.x = (MAX_X - MIN_X) * (rand() / static_cast<double>(RAND_MAX)) + MIN_X;
-        population[i] = chromosome;
+void printBoard(const vector<char>& board) {
+    for (int i = 0; i < 9; ++i) {
+        cout << board[i];
+        if (i % 3 == 2) {
+            cout << endl;
+        } else {
+            cout << " | ";
+        }
     }
-    return population;
 }
 
-void calculateFitness(Chromosome& chromosome) {
-    chromosome.fitness = objectiveFunction(chromosome.x);
-}
-
-void mutate(Chromosome& chromosome) {
-    if (rand() / static_cast<double>(RAND_MAX) < MUTATION_RATE) {
-        // Randomly perturb the value of x
-        chromosome.x += (MAX_X - MIN_X) * (rand() / static_cast<double>(RAND_MAX)) + MIN_X;
+bool isGameOver(const vector<char>& board) {
+    for (int i = 0; i < 3; ++i) {
+        if (board[i] != EMPTY && board[i] == board[i + 3] && board[i] == board[i + 6]) {
+            return true; // Vitoria vertical
+        }
+        if (board[3 * i] != EMPTY && board[3 * i] == board[3 * i + 1] && board[3 * i] == board[3 * i + 2]) {
+            return true; // Vitoria horizontal
+        }
     }
+    if (board[0] != EMPTY && board[0] == board[4] && board[0] == board[8]) {
+        return true; // Diagonal 1
+    }
+    if (board[2] != EMPTY && board[2] == board[4] && board[2] == board[6]) {
+        return true; // Diagonal 2
+    }
+
+    for (char cell : board) {
+        if (cell == EMPTY) {
+            return false; // Jogo nao terminou
+        }
+    }
+    return true; // empate
+}
+
+// Minimax com uma IA mais agressiva
+int minimax(vector<char>& board, char player, int depth, int alpha, int beta) {
+    if (isGameOver(board) || depth == 0) {
+        if (player == PLAYER_X) {
+            return -1; // Jogador ganha
+        } else if (player == PLAYER_O) {
+            return 1; // IA ganha
+        } else {
+            return 0; // empate
+        }
+    }
+
+    vector<int> scores;
+    for (int i = 0; i < 9; ++i) {
+        if (board[i] == EMPTY) {
+            board[i] = player;
+            if (player == PLAYER_X) {
+                alpha = max(alpha, minimax(board, PLAYER_O, depth - 1, alpha, beta));
+                scores.push_back(alpha);
+            } else {
+                beta = min(beta, minimax(board, PLAYER_X, depth - 1, alpha, beta));
+                scores.push_back(beta);
+            }
+            board[i] = EMPTY;
+
+            if (alpha >= beta) {
+                break;
+            }
+        }
+    }
+
+    if (player == PLAYER_X) {
+        int maxScore = -INT_MAX;
+        for (int score : scores) {
+            maxScore = max(maxScore, score);
+        }
+        return maxScore;
+    } else {
+        int minScore = INT_MAX;
+        for (int score : scores) {
+            minScore = min(minScore, score);
+        }
+        return minScore;
+    }
+}
+
+int findBestMove(vector<char>& board) {
+    int bestMove = -1;
+    int bestScore = -INT_MAX;
+    int alpha = -INT_MAX;
+    int beta = INT_MAX;
+    int depth = 5;
+
+    for (int i = 0; i < 9; ++i) {
+        if (board[i] == EMPTY) {
+            board[i] = PLAYER_O;
+            int score = minimax(board, PLAYER_X, depth, alpha, beta);
+            board[i] = EMPTY;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = i;
+            }
+        }
+    }
+
+    return bestMove;
 }
 
 int main() {
-    srand(static_cast<unsigned>(time(0)));
+    vector<char> board(9, EMPTY);
+    int currentPlayer = PLAYER_X;
 
-    vector<Chromosome> population = initializePopulation();
+    printBoard(board);
 
-    for (int generation = 0; generation < MAX_GENERATIONS; ++generation) {
-        for (Chromosome& chromosome : population) {
-            calculateFitness(chromosome);
+    while (!isGameOver(board)) {
+        if (currentPlayer == PLAYER_X) {
+            int move;
+            do {
+                cout << "Sua vez (0-8): ";
+                cin >> move;
+            } while (move < 0 || move > 8 || board[move] != EMPTY);
+            board[move] = PLAYER_X;
+        } else {
+            int bestMove = findBestMove(board);
+            board[bestMove] = PLAYER_O;
+            cout << "Vez da maquina:" << endl;
         }
-        Chromosome bestSolution = population[0];
-        for (const Chromosome& chromosome : population) {
-            if (chromosome.fitness > bestSolution.fitness) {
-                bestSolution = chromosome;
-            }
-        }
-        cout << "Generation " << generation << ": x = " << bestSolution.x << ", f(x) = " << bestSolution.fitness <<endl;
-        for (Chromosome& chromosome : population) {
-            mutate(chromosome);
+
+        printBoard(board);
+        currentPlayer = (currentPlayer == PLAYER_X) ? PLAYER_O : PLAYER_X;
+    }
+
+    if (isGameOver(board)) {
+        if (minimax(board, PLAYER_X, 5, -INT_MAX, INT_MAX) == 1) {
+            cout << "Perdeu" << endl;
+        } else if (minimax(board, PLAYER_X, 5, -INT_MAX, INT_MAX) == -1) {
+            cout << "Ganhou!" << endl;
+        } else {
+            cout << "Empate" << endl;
         }
     }
 
