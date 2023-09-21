@@ -6,3 +6,5 @@ mecanismo_apostas
 /cmake-build-release/
 /cmake-build-debug/
 
+# CMake files
+CMakeLists.txt
